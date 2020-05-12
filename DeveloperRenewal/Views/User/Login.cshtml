@@ -1,0 +1,46 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>用户登录</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="/css/style.min.css" rel="stylesheet">
+    <style>
+        #father {
+            width: 100vw;
+            height: 100vh;
+            background-color: skyblue;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+ 
+        #son {
+            background-color: green;
+        }
+    </style>
+</head>
+<body style="margin: 0">
+    <div id="father">
+        <div id="son">
+            <form asp-action="Login" asp-route-returnUrl="@ViewBag.returnUrl" method="post">
+                <button type="submit" name="provider" value="Microsoft" title="使用微软账户登录"><i class="mdi mdi-48px mdi-microsoft"></i></button>
+            </form>
+        </div>
+    </div>
+<script>
+    window.onload = function() {
+        var errorMessage = "@ViewBag.ErrorMessage";
+        if (errorMessage !== "") {
+            alert(errorMessage);
+        }
+    }
+</script>
+</body>
+</html>
