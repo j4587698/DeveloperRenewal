@@ -99,16 +99,16 @@ namespace DeveloperRenewal.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> Register(string code, string status)
+        public async Task<IActionResult> Register(string code, string state)
         {
             string message = "";
-            if (code.IsNullOrEmpty() || status.IsNullOrEmpty())
+            if (code.IsNullOrEmpty() || state.IsNullOrEmpty())
             {
                 message = "返回信息有误";
                 return RedirectToAction("Index", new { message = message });
             }
 
-            if (!int.TryParse(status, out int id))
+            if (!int.TryParse(state, out int id))
             {
                 message = "Id信息不正确";
                 return RedirectToAction("Index", new { message = message });

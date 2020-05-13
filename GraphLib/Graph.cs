@@ -105,9 +105,9 @@ namespace GraphLib
             return graphServiceClient;
         }
 
-        public string GetAuthUrl(string status = "status")
+        public string GetAuthUrl(string state = "state")
         {
-            return $@"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id={_clientId}&response_type=code&redirect_uri={_redirectUri}&status={HttpUtility.UrlEncode(status)}&response_mode=form_post&scope={HttpUtility.UrlEncode(string.Join(" ", _scopes))}";
+            return $@"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id={_clientId}&response_type=code&redirect_uri={_redirectUri}&state={HttpUtility.UrlEncode(state)}&response_mode=form_post&scope={HttpUtility.UrlEncode(string.Join(" ", _scopes))}";
         }
 
         public static string GetCreateAppUrl(string appName, string redirectUri)
