@@ -29,13 +29,16 @@ namespace DeveloperRenewal.Utils
             }, run => run.OnceIn(random.Next(appliction.MinExecInterval, appliction.MaxExecInterval)).Seconds());
             schedule.JobEnded += (sender, e) =>
             {
+                schedule.Stop();
                 appliction = LiteDbHelper.Instance.GetDataById<ApplicationEntity>(nameof(ApplicationEntity), id);
                 if (appliction.AuthorizationStatus && appliction.IsEnable)
                 {
                     schedule.SetScheduling(run => run.OnceIn(random.Next(appliction.MinExecInterval, appliction.MaxExecInterval)));
+                    schedule.Start();
                 }
                 
             };
+            schedule.Start();
             return true;
         }
     }

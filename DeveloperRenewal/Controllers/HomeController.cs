@@ -132,7 +132,7 @@ namespace DeveloperRenewal.Controllers
             application.AuthorizationStatus = true;
             application.IsEnable = true;
             LiteDbHelper.Instance.InsertOrUpdate(nameof(ApplicationEntity), application);
-            
+            SchedulerUtil.AddScheduler(application.Id);
             return RedirectToAction("Index", new { message = "添加成功" });
         }
 

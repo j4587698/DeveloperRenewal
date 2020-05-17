@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using AspNetCore.Identity.LiteDB;
 using AspNetCore.Identity.LiteDB.Data;
 using AspNetCore.Identity.LiteDB.Models;
+using DeveloperRenewal.Entity;
+using DeveloperRenewal.Utils;
 using GraphLib.Utils;
 using LiteDB;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -35,6 +37,14 @@ namespace DeveloperRenewal
         {
             var liteDatabase = new LiteDatabase("Filename=user.db");
             LiteDbHelper.InitDb(liteDatabase);
+            var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
+            if (applications != null && applications.Count() > 0)
+            {
+                foreach (var application in applications)
+                {
+                    SchedulerUtil.AddScheduler(application.Id);
+                }
+            }
             services.AddSingleton<LiteDbContext>();
             services.AddSingleton<ILiteDbContext, LiteDbContext>(x => new LiteDbContext(liteDatabase));
 
