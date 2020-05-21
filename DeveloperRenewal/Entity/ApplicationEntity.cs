@@ -23,8 +23,5 @@ namespace DeveloperRenewal.Entity
         public bool AuthorizationStatus { get; set; }
 
         public bool IsEnable { get; set; }
-
-        [BsonRef]
-        public List<LogEntity> Logs { get; set; }
     }
 }

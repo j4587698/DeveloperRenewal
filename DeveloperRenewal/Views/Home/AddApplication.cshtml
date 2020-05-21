@@ -84,12 +84,12 @@
     <script type="text/javascript" src="/js/perfect-scrollbar.min.js"></script>
 <script type="text/javascript" src="/js/main.min.js"></script>
 <script>
-    window.onload = function() {
-        var errorMessage = '@ViewBag.ErrorMessage';
-        if (errorMessage) {
-            alert(errorMessage);
+    $(document).ready(function() {
+        var message = unescape("@ViewBag.ErrorMessage".replace(/&#x/g, '%u').replace(/;/g, ''));
+        if (message) {
+            alert(message);
         }
-    }
+    });
 </script>
 </body>
 </html>

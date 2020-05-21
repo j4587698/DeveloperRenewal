@@ -14,6 +14,7 @@
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="/css/style.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/js/jconfirm/jquery-confirm.min.css">
 </head>
 
 <body>
@@ -29,84 +30,80 @@
                         <div class="col-lg-12">
                             <div class="card">
                                 <div class="card-toolbar clearfix">
-                                    <form class="pull-right search-bar" method="get" action="#!" role="form">
-                                        <div class="input-group">
-                                            <div class="input-group-btn">
-                                                <input type="hidden" name="search_field" id="search-field" value="title">
-                                                <button class="btn btn-default dropdown-toggle" id="search-btn" data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false">
-                                                    标题 <span class="caret"></span>
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li> <a tabindex="-1" href="javascript:void(0)" data-field="title">标题</a> </li>
-                                                    <li> <a tabindex="-1" href="javascript:void(0)" data-field="cat_name">栏目</a> </li>
-                                                </ul>
-                                            </div>
-                                            <input type="text" class="form-control" value="" name="keyword" placeholder="请输入名称">
-                                        </div>
-                                    </form>
                                     <div class="toolbar-btn-action">
                                         <a class="btn btn-primary m-r-5" href="@Url.Action("AddApplication")"><i class="mdi mdi-plus"></i> 新增</a>
-                                        <a class="btn btn-success m-r-5" href="#!"><i class="mdi mdi-check"></i> 启用</a>
-                                        <a class="btn btn-warning m-r-5" href="#!"><i class="mdi mdi-block-helper"></i> 禁用</a>
-                                        <a class="btn btn-danger" href="#!"><i class="mdi mdi-window-close"></i> 删除</a>
+                                        <a class="btn btn-success m-r-5" href="#" onclick="enableApps()"><i class="mdi mdi-check"></i> 启用</a>
+                                        <a class="btn btn-warning m-r-5" href="#" onclick="disableApps()"><i class="mdi mdi-block-helper"></i> 禁用</a>
+                                        <a class="btn btn-danger" href="#" onclick="deleteApps()"><i class="mdi mdi-window-close"></i> 删除</a>
                                     </div>
                                 </div>
                                 <div class="card-body">
 
                                     <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>
-                                                        <label class="lyear-checkbox checkbox-primary">
-                                                            <input type="checkbox" id="check-all"><span></span>
-                                                        </label>
-                                                    </th>
-                                                    <th>Client Id</th>
-                                                    <th>状态</th>
-                                                    <th>上次执行时间</th>
-                                                    <th>执行间隔</th>
-                                                    <th>操作</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            @foreach (ApplicationEntity application in ViewBag.Applictions)
-                                            {
-                                                <tr>
-                                                    <td>
-                                                        <label class="lyear-checkbox checkbox-primary">
-                                                            <input type="checkbox" name="ids[]" value="1"><span></span>
-                                                        </label>
-                                                    </td>
-                                                    <td>@application.ClientId</td>
-                                                    <td>@if(!application.AuthorizationStatus)
-                                                        {
-                                                            @:未授权
-                                                        }
-                                                    else
+                                        <form id="listForm" method="post">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>
+                                                            <label class="lyear-checkbox checkbox-primary">
+                                                                <input type="checkbox" id="check-all"><span></span>
+                                                            </label>
+                                                        </th>
+                                                        <th>Client Id</th>
+                                                        <th>状态</th>
+                                                        <th>上次执行时间</th>
+                                                        <th>执行间隔</th>
+                                                        <th>操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (ApplicationEntity application in ViewBag.Applictions)
                                                     {
-                                                        if (application.IsEnable)
-                                                        {
-                                                            @:已启用
-                                                        }
-                                                        else
-                                                        {
-                                                            @:未启用
-                                                        }
-                                                    }</td>
-                                                    <td>@application.LastExecTime</td>
-                                                    <td>@application.MinExecInterval - @application.MaxExecInterval</td>
-                                                    <td>
-                                                        <div class="btn-group">
-                                                            <a class="btn btn-xs btn-default" href="#" title="查看日志" data-toggle="tooltip"><i class="mdi mdi-library-books"></i></a>
-                                                            <a class="btn btn-xs btn-default" href="#" onclick="modify(@application.Id)" title="编辑" data-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>
-                                                            <a class="btn btn-xs btn-default" href="#" title="删除" data-toggle="tooltip"><i class="mdi mdi-window-close"></i></a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            }
-                                            </tbody>
-                                        </table>
+                                                        <tr>
+                                                            <td>
+                                                                <label class="lyear-checkbox checkbox-primary">
+                                                                    <input type="checkbox" name="ids[]" value="@application.Id"><span></span>
+                                                                </label>
+                                                            </td>
+                                                            <td>@application.ClientId</td>
+                                                            <td>
+                                                                @if (!application.AuthorizationStatus)
+                                                                {
+                                                                    @:未授权
+                                                                }
+                                                                else
+                                                                {
+                                                                    if (application.IsEnable)
+                                                                    {
+                                                                        @:已启用
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @:未启用
+                                                                    }
+                                                                }
+                                                            </td>
+                                                            <td>@application.LastExecTime</td>
+                                                            <td>@application.MinExecInterval - @application.MaxExecInterval</td>
+                                                            <td>
+                                                                <div class="btn-group">
+                                                                    @if (application.AuthorizationStatus)
+                                                                    {
+                                                                        <a class="btn btn-xs btn-default" href="@Url.Action("ShowLog", new {id = application.Id})" onclick="log(@application.Id)" title="查看日志" data-toggle="tooltip"><i class="mdi mdi-library-books"></i></a>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <a class="btn btn-xs btn-default" href="@Url.Action("ReAuth", new {id=application.Id})" title="重新授权" data-toggle="tooltip"><i class="mdi mdi-refresh"></i></a>
+                                                                    }
+                                                                    <a class="btn btn-xs btn-default" href="@Url.Action("AddApplication", new {id = application.Id})" title="编辑" data-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>
+                                                                    <a class="btn btn-xs btn-default" href="#" onclick="deleteApp(@application.Id, '@application.ClientId')" title="删除" data-toggle="tooltip"><i class="mdi mdi-window-close"></i></a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -123,7 +120,8 @@
 
     <script type="text/javascript" src="/js/jquery.min.js"></script>
     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="/js/perfect-scrollbar.min.js"></script>
+<script type="text/javascript" src="/js/perfect-scrollbar.min.js"></script>
+<script src="/js/jconfirm/jquery-confirm.min.js"></script>
     <script type="text/javascript" src="/js/main.min.js"></script>
     <script type="text/javascript">
         $(function() {
@@ -134,14 +132,62 @@
             });
         });
         $(document).ready(function() {
-            var message = unescape("@ViewBag.Message".replace(/&#x/g,'%u').replace(/;/g,''));
+            var message = unescape("@ViewBag.Message".replace(/&#x/g, '%u').replace(/;/g, ''));
             if (message) {
                 alert(message);
             }
         });
 
-        function modify(id) {
-            window.location.href = '@Url.Action("AddApplication")?id=' + id;
+        function enableApps() {
+            $('#listForm').attr('action', '@Url.Action("EnableApplications")').submit();
+        }
+
+        function disableApps() {
+            $('#listForm').attr('action', '@Url.Action("DisableApplications")').submit();
+        }
+
+        function deleteApps() {
+            $.confirm({
+                title: '警告',
+                content: '将批量删除所选项目，该操作不可恢复，是否确认？',
+                type: 'orange',
+                typeAnimated: false,
+                buttons: {
+                    omg: {
+                        text: '确定',
+                        btnClass: 'btn-orange',
+                        action: function() {
+                            $('#listForm').attr('action', '@Url.Action("DeleteApplications")').submit();
+                        }
+                    },
+                    close: {
+                        text: '关闭'
+                    }
+                }
+            });
+
+        }
+
+        function deleteApp(id, name) {
+            $.confirm({
+                title: '警告',
+                content: '将删除' + name + '，该操作不可恢复，是否确认？',
+                type: 'orange',
+                typeAnimated: false,
+                buttons: {
+                    omg: {
+                        text: '确定',
+                        btnClass: 'btn-orange',
+                        action: function() {
+                            window.location.href = '@Url.Action("DeleteApplication")?id=' + id;
+                        }
+                    },
+                    close: {
+                        text: '关闭'
+                    }
+                }
+            });
+
         }
     </script>
 </body>

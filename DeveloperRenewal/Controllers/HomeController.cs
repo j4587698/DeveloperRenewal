@@ -37,7 +37,7 @@ namespace DeveloperRenewal.Controllers
             var id = User.FindFirst(ClaimTypes.NameIdentifier);
             if (id == null)
             {
-                RedirectToAction("Login", "User");
+                return RedirectToAction("Login", "User");
             }
 
             if (message != null)
@@ -45,7 +45,7 @@ namespace DeveloperRenewal.Controllers
                 ViewBag.Message = message;
             }
 
-            ViewBag.Applictions = LiteDbHelper.Instance.GetAllDataToList<ApplicationEntity>(nameof(ApplicationEntity));
+            ViewBag.Applictions = LiteDbHelper.Instance.GetAllData<ApplicationEntity>(nameof(ApplicationEntity)).Where(x => x.UserId == id.Value);
 
             return View();
         }
@@ -61,8 +61,17 @@ namespace DeveloperRenewal.Controllers
             }
             else
             {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                {
+                    return RedirectToAction("Login", "User");
+                }
                 application = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity))
-                    .FindOne(x => x.Id == id);
+                    .FindOne(x => x.Id == id && x.UserId == userId.Value);
+                if (application == null)
+                {
+                    return RedirectToAction("Index", new {message = "当前应用不存在或当前应用不属于你"});
+                }
                 ViewBag.Title = "修改当前应用";
             }
             ViewBag.CreateUrl = Graph.GetCreateAppUrl("DeveloperRenewal", Request.GetRegisterUrl());
@@ -72,28 +81,61 @@ namespace DeveloperRenewal.Controllers
         [HttpPost]
         public IActionResult AddApplication(ApplicationEntity application)
         {
+            ViewBag.Title = application.Id == 0 ? "添加新应用" : "修改当前应用";
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+            var application1 = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity))
+                .FindOne(x => x.Id == application.Id && x.UserId == userId.Value);
+            if (application1 == null)
+            {
+                return RedirectToAction("Index", new { message = "当前应用不存在或当前应用不属于你" });
+            }
             if (application.ClientId.IsNullOrEmpty() || application.ClientSecret.IsNullOrEmpty())
             {
                 ViewBag.ErrorMessage = "Client Id与Client Secret不能为空";
-                return View();
+                return View(application);
             }
 
             if (application.MinExecInterval < 600)
             {
                 ViewBag.ErrorMessage = "最小时间不能小于600秒";
-                return View();
+                return View(application);
             }
 
             if (application.MaxExecInterval < application.MinExecInterval)
             {
                 ViewBag.ErrorMessage = "最大时间不能小于最小时间";
-                return View();
+                return View(application);
             }
 
             application.UserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             LiteDbHelper.Instance.InsertOrUpdate(nameof(ApplicationEntity), application);
 
+            Graph graph = new Graph(application.ClientId, application.ClientSecret, Request.GetRegisterUrl(), Constants.Scopes);
+            return Redirect(graph.GetAuthUrl(application.Id.ToString()));
+        }
+
+        public IActionResult ReAuth(int id)
+        {
+            if (id <= 0)
+            {
+                return RedirectToAction("Index");
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+            var application = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity))
+                .FindOne(x => x.Id == id && x.UserId == userId.Value);
+            if (application == null)
+            {
+                return RedirectToAction("Index", new { message = "当前应用不存在或当前应用不属于你" });
+            }
             Graph graph = new Graph(application.ClientId, application.ClientSecret, Request.GetRegisterUrl(), Constants.Scopes);
             return Redirect(graph.GetAuthUrl(application.Id.ToString()));
         }
@@ -134,6 +176,96 @@ namespace DeveloperRenewal.Controllers
             LiteDbHelper.Instance.InsertOrUpdate(nameof(ApplicationEntity), application);
             SchedulerUtil.AddScheduler(application.Id);
             return RedirectToAction("Index", new { message = "添加成功" });
+        }
+
+        public IActionResult ShowLog(int id)
+        {
+            if (id <= 0)
+            {
+                return RedirectToAction("Index");
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+            var application = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity))
+                .FindOne(x => x.Id == id && x.UserId == userId.Value);
+            if (application == null)
+            {
+                return RedirectToAction("Index", new { message = "当前应用不存在或当前应用不属于你" });
+            }
+            var model = LiteDbHelper.Instance.GetAllData<LogEntity>(nameof(LogEntity)).Where(x => x.ApplicationId == id).Reverse().ToList();
+            return View(model);
+        }
+
+        public IActionResult DeleteApplication(int id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+            var application = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity))
+                .FindOne(x => x.Id == id && x.UserId == userId.Value);
+            if (application == null)
+            {
+                return RedirectToAction("Index", new { message = "当前应用不存在或当前应用不属于你" });
+            }
+            LiteDbHelper.Instance.Delete(nameof(LogEntity), id);
+            LiteDbHelper.Instance.Delete(nameof(ApplicationEntity), application);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult DeleteApplications(string[] ids)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            var applications = LiteDbHelper.Instance.GetAllData<ApplicationEntity>(nameof(ApplicationEntity))
+                .Where(x => x.UserId == userId.Value && ids.Contains(x.Id.ToString())).ToList();
+            LiteDbHelper.Instance.GetCollection<LogEntity>(nameof(LogEntity)).DeleteMany(x => applications.Select(y => y.Id).Contains(x.ApplicationId));
+            LiteDbHelper.Instance.Delete(nameof(ApplicationEntity), applications);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult EnableApplications(string[] ids)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            var applications = LiteDbHelper.Instance.GetAllData<ApplicationEntity>(nameof(ApplicationEntity))
+                .Where(x => x.UserId == userId.Value && ids.Contains(x.Id.ToString())).ToList();
+            foreach (var applicationEntity in applications)
+            {
+                applicationEntity.IsEnable = true;
+            }
+            LiteDbHelper.Instance.InsertOrUpdateBatch(nameof(ApplicationEntity), applications);
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult DisableApplications(string[] ids)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            var applications = LiteDbHelper.Instance.GetAllData<ApplicationEntity>(nameof(ApplicationEntity))
+                .Where(x => x.UserId == userId.Value && ids.Contains(x.Id.ToString())).ToList();
+            foreach (var applicationEntity in applications)
+            {
+                applicationEntity.IsEnable = false;
+            }
+            LiteDbHelper.Instance.InsertOrUpdateBatch(nameof(ApplicationEntity), applications);
+            return RedirectToAction("Index");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -38,7 +38,7 @@ namespace DeveloperRenewal
             var liteDatabase = new LiteDatabase("Filename=user.db");
             LiteDbHelper.InitDb(liteDatabase);
             var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
-            if (applications != null && applications.Count() > 0)
+            if (applications != null && applications.Any())
             {
                 foreach (var application in applications)
                 {

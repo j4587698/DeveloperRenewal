@@ -82,19 +82,25 @@ namespace GraphLib.Utils
 
         public void Delete<T>(string tableName, T data) where T : IBaseEntity
         {
-            Delete<T>(tableName, data.Id);
+            Delete(tableName, data.Id);
         }
 
-        public void Delete<T>(string tableName, int id) where T : IBaseEntity
+        public void Delete(string tableName, int id) 
         {
-            var col = db.GetCollection<T>(tableName);
+            var col = db.GetCollection(tableName);
             col.Delete(id);
         }
 
-        internal void Delete<T>(string tableName, IEnumerable<T> datas) where T : IBaseEntity
+        public void Delete<T>(string tableName, IEnumerable<T> datas) where T : IBaseEntity
         {
             var col = db.GetCollection<T>(tableName);
             col.DeleteMany(Query.In("_id", IDBDaoToBsonArray(datas)));
+        }
+
+        public void Delete(string tableName, int[] ids)
+        {
+            var col = db.GetCollection<IBaseEntity>(tableName);
+            col.DeleteMany(x => ids.Contains(x.Id));
         }
 
         private BsonArray IDBDaoToBsonArray<T>(IEnumerable<T> datas) where T : IBaseEntity
