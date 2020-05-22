@@ -35,7 +35,7 @@ namespace DeveloperRenewal
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var liteDatabase = new LiteDatabase("Filename=user.db");
+            var liteDatabase = new LiteDatabase("Filename=db\\user.db");
             LiteDbHelper.InitDb(liteDatabase);
             var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
             if (applications != null && applications.Any())
