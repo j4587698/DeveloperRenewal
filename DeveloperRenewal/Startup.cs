@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AspNetCore.Identity.LiteDB;
-using AspNetCore.Identity.LiteDB.Data;
-using AspNetCore.Identity.LiteDB.Models;
+// using AspNetCore.Identity.LiteDB;
+// using AspNetCore.Identity.LiteDB.Data;
+// using AspNetCore.Identity.LiteDB.Models;
 using DeveloperRenewal.Entity;
 using DeveloperRenewal.Utils;
 using GraphLib.Utils;
 using LiteDB;
+using LiteDB.Identity.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Builder;
@@ -36,7 +37,7 @@ namespace DeveloperRenewal
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var liteDatabase = new LiteDatabase("Filename=db\\user.db");
+            var liteDatabase = new LiteDatabase("Filename=db\\user.db;Connection=Shared");
             LiteDbHelper.InitDb(liteDatabase);
             var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
             if (applications != null && applications.Any())
@@ -46,22 +47,24 @@ namespace DeveloperRenewal
                     SchedulerUtil.AddScheduler(application.Id);
                 }
             }
-            services.AddDataProtection().PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/app"));
-            services.AddSingleton<LiteDbContext>();
-            services.AddSingleton<ILiteDbContext, LiteDbContext>(x => new LiteDbContext(liteDatabase));
 
-            services.AddIdentity<ApplicationUser, AspNetCore.Identity.LiteDB.IdentityRole>(options =>
-                {
-                    options.Password.RequireDigit = false;
-                    options.Password.RequireUppercase = false;
-                    options.Password.RequireLowercase = false;
-                    options.Password.RequireNonAlphanumeric = false;
-                    options.Password.RequiredLength = 6;
-                })
-                //.AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddUserStore<LiteDbUserStore<ApplicationUser>>()
-                .AddRoleStore<LiteDbRoleStore<AspNetCore.Identity.LiteDB.IdentityRole>>()
-                .AddDefaultTokenProviders();
+            services.AddLiteDBIdentity("Filename=db\\user.db;Connection=Shared").AddDefaultTokenProviders();
+            services.AddDataProtection().PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/app"));
+            // services.AddSingleton<LiteDbContext>();
+            // services.AddSingleton<ILiteDbContext, LiteDbContext>(x => new LiteDbContext(liteDatabase));
+            //
+            // services.AddIdentity<ApplicationUser, AspNetCore.Identity.LiteDB.IdentityRole>(options =>
+            //     {
+            //         options.Password.RequireDigit = false;
+            //         options.Password.RequireUppercase = false;
+            //         options.Password.RequireLowercase = false;
+            //         options.Password.RequireNonAlphanumeric = false;
+            //         options.Password.RequiredLength = 6;
+            //     })
+            //     //.AddEntityFrameworkStores<ApplicationDbContext>()
+            //     .AddUserStore<LiteDbUserStore<ApplicationUser>>()
+            //     .AddRoleStore<LiteDbRoleStore<AspNetCore.Identity.LiteDB.IdentityRole>>()
+            //     .AddDefaultTokenProviders();
 
             services.ConfigureApplicationCookie(options =>
             {
@@ -102,6 +105,34 @@ namespace DeveloperRenewal
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders();
+
+            // app.Run(async (context) =>
+            // {
+            //     context.Response.ContentType = "text/plain";
+            //
+            //     // Request method, scheme, and path
+            //     await context.Response.WriteAsync(
+            //         $"Request Method: {context.Request.Method}{Environment.NewLine}");
+            //     await context.Response.WriteAsync(
+            //         $"Request Scheme: {context.Request.Scheme}{Environment.NewLine}");
+            //     await context.Response.WriteAsync(
+            //         $"Request Path: {context.Request.Path}{Environment.NewLine}");
+            //
+            //     // Headers
+            //     await context.Response.WriteAsync($"Request Headers:{Environment.NewLine}");
+            //
+            //     foreach (var header in context.Request.Headers)
+            //     {
+            //         await context.Response.WriteAsync($"{header.Key}: " +
+            //                                           $"{header.Value}{Environment.NewLine}");
+            //     }
+            //
+            //     await context.Response.WriteAsync(Environment.NewLine);
+            //
+            //     // Connection: RemoteIp
+            //     await context.Response.WriteAsync(
+            //         $"Request RemoteIp: {context.Connection.RemoteIpAddress}");
+            // });
 
             if (env.IsDevelopment())
             {

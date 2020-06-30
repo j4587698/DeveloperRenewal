@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AspNetCore.Identity.LiteDB.Data;
-using AspNetCore.Identity.LiteDB.Models;
+// using AspNetCore.Identity.LiteDB.Data;
+// using AspNetCore.Identity.LiteDB.Models;
 using DeveloperRenewal.Entity;
 using DeveloperRenewal.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -24,12 +24,12 @@ namespace DeveloperRenewal.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly ILiteDbContext _liteDbContext;
+        //private readonly ILiteDbContext _liteDbContext;
 
-        public HomeController(ILogger<HomeController> logger, ILiteDbContext liteDbContext)
+        public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
-            _liteDbContext = liteDbContext;
+            //_liteDbContext = liteDbContext;
         }
 
         public IActionResult Index(string message = null)

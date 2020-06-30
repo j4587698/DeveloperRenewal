@@ -1,7 +1,8 @@
 ﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AspNetCore.Identity.LiteDB.Models;
+// using AspNetCore.Identity.LiteDB.Models;
+using LiteDB.Identity.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,11 @@ namespace DeveloperRenewal.Controllers
     [Authorize]
     public class UserController : Controller
     {
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<LiteDbUser> _signInManager;
+        private readonly UserManager<LiteDbUser> _userManager;
 
-        public UserController(SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager)
+        public UserController(SignInManager<LiteDbUser> signInManager,
+            UserManager<LiteDbUser> userManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -72,7 +73,7 @@ namespace DeveloperRenewal.Controllers
             if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
             {
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                var user = new ApplicationUser { UserName = email, Email = email };
+                var user = new LiteDbUser { UserName = email, Email = email };
                 var result1 = await _userManager.CreateAsync(user);
                 if (result1.Succeeded)
                 {
