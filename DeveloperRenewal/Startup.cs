@@ -37,7 +37,7 @@ namespace DeveloperRenewal
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var liteDatabase = new LiteDatabase("Filename=db\\user.db;Connection=Shared");
+            var liteDatabase = new LiteDatabase("Filename=db/user.db;Connection=Shared");
             LiteDbHelper.InitDb(liteDatabase);
             var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
             if (applications != null && applications.Any())
@@ -48,7 +48,7 @@ namespace DeveloperRenewal
                 }
             }
 
-            services.AddLiteDBIdentity("Filename=db\\user.db;Connection=Shared").AddDefaultTokenProviders();
+            services.AddLiteDBIdentity("Filename=db/user.db;Connection=Shared").AddDefaultTokenProviders();
             services.AddDataProtection().PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/app"));
             // services.AddSingleton<LiteDbContext>();
             // services.AddSingleton<ILiteDbContext, LiteDbContext>(x => new LiteDbContext(liteDatabase));
@@ -105,6 +105,11 @@ namespace DeveloperRenewal
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders();
+            app.Use(async (context, next) =>
+            {
+                context.Request.Scheme = "https";
+                await next();
+            });
 
             // app.Run(async (context) =>
             // {
