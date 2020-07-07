@@ -90,6 +90,12 @@ namespace DeveloperRenewal
                     microsoftOptions.ClientId = Configuration["Authentication:Microsoft:ClientId"];
                     microsoftOptions.ClientSecret = Configuration["Authentication:Microsoft:ClientSecret"];
                     //microsoftOptions.CallbackPath = new PathString("/signin-microsoft");
+                })
+                .AddGitHub(builder =>
+                {
+                    builder.ClientId = Configuration["Authentication:Github:ClientId"];
+                    builder.ClientSecret = Configuration["Authentication:Github:ClientSecret"];
+                    builder.Scope.Add("user:email");
                 });
             
             services.Configure<ForwardedHeadersOptions>(options =>
