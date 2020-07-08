@@ -87,11 +87,15 @@ namespace DeveloperRenewal.Controllers
             {
                 return RedirectToAction("Login", "User");
             }
-            var application1 = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity))
-                .FindOne(x => x.Id == application.Id && x.UserId == userId.Value);
-            if (application1 == null)
+
+            if (application.Id != 0)
             {
-                return RedirectToAction("Index", new { message = "当前应用不存在或当前应用不属于你" });
+                var application1 = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity))
+                    .FindOne(x => x.Id == application.Id && x.UserId == userId.Value);
+                if (application1 == null)
+                {
+                    return RedirectToAction("Index", new { message = "当前应用不存在或当前应用不属于你" });
+                }
             }
             if (application.ClientId.IsNullOrEmpty() || application.ClientSecret.IsNullOrEmpty())
             {
