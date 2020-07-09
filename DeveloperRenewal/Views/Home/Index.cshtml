@@ -1,4 +1,5 @@
 ﻿@using DeveloperRenewal.Entity
+@using DeveloperRenewal.Extensions
 @{
     Layout = null;
 }
@@ -49,7 +50,7 @@
                                                                 <input type="checkbox" id="check-all"><span></span>
                                                             </label>
                                                         </th>
-                                                        <th>Client Id</th>
+                                                        <th>应用名</th>
                                                         <th>状态</th>
                                                         <th>上次执行时间</th>
                                                         <th>执行间隔</th>
@@ -65,7 +66,7 @@
                                                                     <input type="checkbox" name="ids[]" value="@application.Id"><span></span>
                                                                 </label>
                                                             </td>
-                                                            <td>@application.ClientId</td>
+                                                            <td>@(application.ApplicationName.IsNullOrEmpty() ? application.ClientId : application.ApplicationName)</td>
                                                             <td>
                                                                 @if (!application.AuthorizationStatus)
                                                                 {
@@ -83,7 +84,7 @@
                                                                     }
                                                                 }
                                                             </td>
-                                                            <td>@application.LastExecTime</td>
+                                                            <td>@application.LastExecTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                                             <td>@application.MinExecInterval - @application.MaxExecInterval</td>
                                                             <td>
                                                                 <div class="btn-group">
