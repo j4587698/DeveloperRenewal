@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-// using AspNetCore.Identity.LiteDB;
-// using AspNetCore.Identity.LiteDB.Data;
-// using AspNetCore.Identity.LiteDB.Models;
 using DeveloperRenewal.Entity;
 using DeveloperRenewal.Utils;
 using GraphLib.Utils;
 using LiteDB;
 using LiteDB.Identity.Extensions;
+using Longbow.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Builder;
@@ -39,8 +37,9 @@ namespace DeveloperRenewal
         {
             var liteDatabase = new LiteDatabase("Filename=db/user.db;Connection=Shared");
             LiteDbHelper.InitDb(liteDatabase);
-            services.AddTaskServices();
-            var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
+            //services.AddTaskServices();
+            TaskServicesManager.Init();
+            var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).FindAll();//.Find(x => x.AuthorizationStatus && x.IsEnable);
             if (applications != null && applications.Any())
             {
                 foreach (var application in applications)
@@ -51,23 +50,7 @@ namespace DeveloperRenewal
 
             services.AddLiteDBIdentity("Filename=db/user.db;Connection=Shared").AddDefaultTokenProviders();
             services.AddDataProtection().PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/app"));
-            
-            // services.AddSingleton<LiteDbContext>();
-            // services.AddSingleton<ILiteDbContext, LiteDbContext>(x => new LiteDbContext(liteDatabase));
-            //
-            // services.AddIdentity<ApplicationUser, AspNetCore.Identity.LiteDB.IdentityRole>(options =>
-            //     {
-            //         options.Password.RequireDigit = false;
-            //         options.Password.RequireUppercase = false;
-            //         options.Password.RequireLowercase = false;
-            //         options.Password.RequireNonAlphanumeric = false;
-            //         options.Password.RequiredLength = 6;
-            //     })
-            //     //.AddEntityFrameworkStores<ApplicationDbContext>()
-            //     .AddUserStore<LiteDbUserStore<ApplicationUser>>()
-            //     .AddRoleStore<LiteDbRoleStore<AspNetCore.Identity.LiteDB.IdentityRole>>()
-            //     .AddDefaultTokenProviders();
-
+            services.AddRazorPages();
             services.ConfigureApplicationCookie(options =>
             {
                 options.AccessDeniedPath = "/Account/AccessDenied";
@@ -119,34 +102,6 @@ namespace DeveloperRenewal
                 await next();
             });
 
-            // app.Run(async (context) =>
-            // {
-            //     context.Response.ContentType = "text/plain";
-            //
-            //     // Request method, scheme, and path
-            //     await context.Response.WriteAsync(
-            //         $"Request Method: {context.Request.Method}{Environment.NewLine}");
-            //     await context.Response.WriteAsync(
-            //         $"Request Scheme: {context.Request.Scheme}{Environment.NewLine}");
-            //     await context.Response.WriteAsync(
-            //         $"Request Path: {context.Request.Path}{Environment.NewLine}");
-            //
-            //     // Headers
-            //     await context.Response.WriteAsync($"Request Headers:{Environment.NewLine}");
-            //
-            //     foreach (var header in context.Request.Headers)
-            //     {
-            //         await context.Response.WriteAsync($"{header.Key}: " +
-            //                                           $"{header.Value}{Environment.NewLine}");
-            //     }
-            //
-            //     await context.Response.WriteAsync(Environment.NewLine);
-            //
-            //     // Connection: RemoteIp
-            //     await context.Response.WriteAsync(
-            //         $"Request RemoteIp: {context.Connection.RemoteIpAddress}");
-            // });
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -164,7 +119,7 @@ namespace DeveloperRenewal
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
