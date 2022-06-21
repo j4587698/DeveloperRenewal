@@ -39,6 +39,7 @@ namespace DeveloperRenewal
         {
             var liteDatabase = new LiteDatabase("Filename=db/user.db;Connection=Shared");
             LiteDbHelper.InitDb(liteDatabase);
+            services.AddTaskServices();
             var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
             if (applications != null && applications.Any())
             {
@@ -50,7 +51,7 @@ namespace DeveloperRenewal
 
             services.AddLiteDBIdentity("Filename=db/user.db;Connection=Shared").AddDefaultTokenProviders();
             services.AddDataProtection().PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/app"));
-            services.AddTaskServices();
+            
             // services.AddSingleton<LiteDbContext>();
             // services.AddSingleton<ILiteDbContext, LiteDbContext>(x => new LiteDbContext(liteDatabase));
             //
