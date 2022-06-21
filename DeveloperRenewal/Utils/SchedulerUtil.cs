@@ -1,5 +1,4 @@
 ﻿using DeveloperRenewal.Entity;
-using FluentScheduler;
 using GraphLib;
 using GraphLib.Utils;
 using Microsoft.AspNetCore.Http;
@@ -7,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DeveloperRenewal.Trigger;
 using GraphLib.File;
 using GraphLib.Mail;
+using Longbow.Tasks;
 
 namespace DeveloperRenewal.Utils
 {
@@ -22,38 +23,29 @@ namespace DeveloperRenewal.Utils
                 return false;
             }
             Random random = new Random();
-            var schedule = new Schedule(async () =>
-            {
-                Graph graph = new Graph(application.ClientId, application.ClientSecret, "http://localhost", Constants.Scopes);
-                var key = random.Next() % 3;
-                switch (key)
+            TaskServicesManager.GetOrAdd($"scheduler{id}", async token =>
                 {
-                    case 0:
-                        await ReadMail(graph, application);
-                        break;
-                    case 1:
-                        await ReadEvent(graph, application);
-                        break;
-                    case 2:
-                        await ReadFiles(graph, application);
-                        break;
-                }
-                application.LastExecTime = DateTime.Now;
-                LiteDbHelper.Instance.InsertOrUpdate(nameof(ApplicationEntity), application);
+                    Graph graph = new Graph(application.ClientId, application.ClientSecret, "http://localhost",
+                        Constants.Scopes);
+                    var key = random.Next() % 3;
+                    switch (key)
+                    {
+                        case 0:
+                            await ReadMail(graph, application);
+                            break;
+                        case 1:
+                            await ReadEvent(graph, application);
+                            break;
+                        case 2:
+                            await ReadFiles(graph, application);
+                            break;
+                    }
 
-            }, run => run.OnceIn(random.Next(application.MinExecInterval, application.MaxExecInterval)).Seconds());
-            schedule.JobEnded += (sender, e) =>
-            {
-                schedule.Stop();
-                application = LiteDbHelper.Instance.GetDataById<ApplicationEntity>(nameof(ApplicationEntity), id);
-                if (application.AuthorizationStatus && application.IsEnable)
-                {
-                    schedule.SetScheduling(run => run.OnceIn(random.Next(application.MinExecInterval, application.MaxExecInterval)).Seconds());
-                    schedule.Start();
-                }
-                
-            };
-            schedule.Start();
+                    application.LastExecTime = DateTime.Now;
+                    LiteDbHelper.Instance.InsertOrUpdate(nameof(ApplicationEntity), application);
+                },
+                new RandomTrigger(TimeSpan.FromSeconds(application.MaxExecInterval),
+                    TimeSpan.FromSeconds(application.MinExecInterval)));
             return true;
         }
 

@@ -50,6 +50,7 @@ namespace DeveloperRenewal
 
             services.AddLiteDBIdentity("Filename=db/user.db;Connection=Shared").AddDefaultTokenProviders();
             services.AddDataProtection().PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/app"));
+            services.AddTaskServices();
             // services.AddSingleton<LiteDbContext>();
             // services.AddSingleton<ILiteDbContext, LiteDbContext>(x => new LiteDbContext(liteDatabase));
             //

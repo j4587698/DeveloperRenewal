@@ -5,9 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LiteDB" Version="5.0.10" />
-    <PackageReference Include="Microsoft.Graph" Version="3.30.0" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.30.0" />
+    <PackageReference Include="LiteDB" Version="5.0.12" />
+    <PackageReference Include="Microsoft.Graph" Version="4.31.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.44.0" />
   </ItemGroup>
 
 </Project>
