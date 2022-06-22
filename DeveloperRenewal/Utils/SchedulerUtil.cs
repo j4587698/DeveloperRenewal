@@ -25,6 +25,10 @@ namespace DeveloperRenewal.Utils
             Random random = new Random();
             TaskServicesManager.GetOrAdd($"scheduler{id}", async token =>
                 {
+                    var random = new Random();
+                    var interval = random.Next(application.MaxExecInterval - application.MinExecInterval);
+                    await Task.Delay(TimeSpan.FromSeconds(interval));
+                    Console.WriteLine("开始执行");
                     Graph graph = new Graph(application.ClientId, application.ClientSecret, "http://localhost",
                         Constants.Scopes);
                     var key = random.Next() % 3;
@@ -44,8 +48,7 @@ namespace DeveloperRenewal.Utils
                     application.LastExecTime = DateTime.Now;
                     LiteDbHelper.Instance.InsertOrUpdate(nameof(ApplicationEntity), application);
                 },
-                new RandomTrigger(TimeSpan.FromSeconds(application.MaxExecInterval),
-                    TimeSpan.FromSeconds(application.MinExecInterval)));
+                TriggerBuilder.Default.WithInterval(TimeSpan.FromSeconds(application.MinExecInterval)).WithRepeatCount(0).Build());
             return true;
         }
 

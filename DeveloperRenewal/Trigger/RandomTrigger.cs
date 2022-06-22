@@ -14,6 +14,8 @@ namespace DeveloperRenewal.Trigger
         {
             MaxInterval = maxInterval;
             MinInterval = minInterval;
+            StartTime = DateTimeOffset.Now;
+            Timeout = TimeSpan.MaxValue;
         }
         
         private bool _enabled = true;
@@ -52,6 +54,7 @@ namespace DeveloperRenewal.Trigger
                 LastRuntime = DateTimeOffset.Now;
                 interval = TimeSpan.FromSeconds(random.NextDouble(MinInterval.TotalSeconds, MaxInterval.TotalSeconds));
                 NextRuntime = DateTimeOffset.Now.Add(interval);
+                ret = true;
             }
             return ret;
         }

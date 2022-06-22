@@ -37,16 +37,9 @@ namespace DeveloperRenewal
         {
             var liteDatabase = new LiteDatabase("Filename=db/user.db;Connection=Shared");
             LiteDbHelper.InitDb(liteDatabase);
-            //services.AddTaskServices();
-            TaskServicesManager.Init();
-            var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
-            if (applications != null && applications.Any())
-            {
-                foreach (var application in applications)
-                {
-                    SchedulerUtil.AddScheduler(application.Id);
-                }
-            }
+            services.AddTaskServices();
+            //TaskServicesManager.Init();
+            
 
             services.AddLiteDBIdentity("Filename=db/user.db;Connection=Shared").AddDefaultTokenProviders();
             services.AddDataProtection().PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/app"));
@@ -95,6 +88,14 @@ namespace DeveloperRenewal
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var applications = LiteDbHelper.Instance.GetCollection<ApplicationEntity>(nameof(ApplicationEntity)).Find(x => x.AuthorizationStatus && x.IsEnable);
+            if (applications != null && applications.Any())
+            {
+                foreach (var application in applications)
+                {
+                    SchedulerUtil.AddScheduler(application.Id);
+                }
+            }
             app.UseForwardedHeaders();
             app.Use(async (context, next) =>
             {
