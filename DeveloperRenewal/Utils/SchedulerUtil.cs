@@ -49,7 +49,8 @@ namespace DeveloperRenewal.Utils
 
                         application.LastExecTime = DateTime.Now;
                         LiteDbHelper.Instance.InsertOrUpdate(nameof(ApplicationEntity), application);
-                    
+                        LiteDbHelper.Instance.GetCollection<LogEntity>(nameof(LogEntity))
+                            .DeleteMany(x => x.CreateDate < DateTime.Now.AddMonths(-1));
                     }
                     catch (Exception e)
                     {
